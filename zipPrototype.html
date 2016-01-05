@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Near/Far Zipcode Lookup</title>
+    </head>
+
+	<body>
+		<p>Insert Your Zip Code Below <br> </p>
+		<input type="text" id='zip'></input>
+		<input type="button" id="button" value="Submit Zip Code" onClick="whenClicked(document.getElementById('zip').value)" />
+		<div id="result"></div>
+		<p><i>Returns alert message with near & distant locations </i></p>
+	</body>
+</html>
+
+<script src="jquery-1.11.3.js" ></script>
+
+<script>
+function whenClicked(zip){
+		userZip = zip;
+   				var isValidZip = /(^\d{5}$)|(^\d{5}-\d{4}$)/.test(userZip);
+   				if (isValidZip == true) {
+   				z1=main(zip);
+   				zip=parseInt(zip)+1;
+   				zInter=getCloseZip(zip, z1);
+   				z2=checkFunction(z1, zInter, zip);
+   				z3=getFarZip(zip);
+   				} else {
+   				alert ("Invalid Zip Code, Please Try Again");
+   				return 0;
+				}
+			alert(" User's Location= " + z1 + "\n Nearby Location= " + z2 +"\n Distant Location= "+ z3);
+		}
+
+function main(zip) {
+	var zipcode = zip;
+	var userLocation;
+		while (true) {
+   			userLocation = getPlacename(zipcode);
+   				if (userLocation != false) {
+    			break;
+  			}
+  		if (zipcode > 99950) {
+    			zipcode = 99540;
+  			} else {
+    		zipcode = parseInt(zipcode) + 1;
+  			}
+		}
+	 return userLocation;
+	}
+	
+function getCloseZip(zip, userLocation) {
+	var zipcode = zip;
+	var closeLocation;
+		while (true) {
+   			closeLocation = getPlacename(zipcode);
+   				if (closeLocation != false) {
+    			break;
+  			}
+  		if (zipcode > 99950) {
+    			zipcode = 99500;
+  			} else {
+    		zipcode = parseInt(zipcode) + 5;
+  			}
+		}
+	 	return closeLocation; 
+	}
+
+function checkFunction(userLocation, closeLocation, zip){
+	while (userLocation==closeLocation) {
+	zip = parseInt(zip) + 4;
+	closeLocation=getCloseZip(zip);
+	}
+	return closeLocation;
+}
+
+function getFarZip(zip) {
+	var zipcode = parseInt(zip)+10001;
+	var farLocation;
+		while (true) {
+   			farLocation = getPlacename(zipcode);
+   				if (farLocation != false) {
+    			break;
+  			}
+  		if (zipcode > 99950) {
+    			zipcode = 10000;
+  			} else {
+    		zipcode = parseInt(zipcode) + 2;
+  			}
+		}
+	 return farLocation;
+}
+	 
+function getPlacename(zipcode) {
+    var response = $.ajax({
+        type: "GET",
+        url: "https://api.zippopotam.us/us/" + zipcode,
+        async: false
+    }).responseJSON;
+    
+    if (!('places' in response)) {
+        // no data received
+		return false;
+			} else {
+			
+        var userPlace = response.places[0]['place name'];
+        var userStateabbrv = response.places[0]['state abbreviation'];
+		var userLocation= String(userPlace + ", " + userStateabbrv);
+		return userLocation;
+    }
+}
+
+</script>
